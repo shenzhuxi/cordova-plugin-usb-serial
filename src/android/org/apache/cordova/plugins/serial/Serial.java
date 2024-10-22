@@ -409,7 +409,7 @@ public class Serial extends CordovaPlugin {
 						port.close();
 					}
 					port = null;
-					callbackContext.success("Serial port cloesd!");
+					callbackContext.success("Serial port closed!");
 				}
 				catch (IOException | NullPointerException e) {
 					// deal with error
@@ -428,8 +428,14 @@ public class Serial extends CordovaPlugin {
 	private void stopIoManager() {
 		if (mSerialIoManager != null) {
 			Log.i(TAG, "Stopping io manager.");
-			mSerialIoManager.stop();
-			mSerialIoManager = null;
+
+      try {
+        mSerialIoManager.stop();
+      } catch (IOException | NullPointerException e) {
+        // Ignore
+      }
+
+      mSerialIoManager = null;
 		}
 	}
 
@@ -439,8 +445,13 @@ public class Serial extends CordovaPlugin {
 	private void startIoManager() {
 		if (port != null) {
 			Log.i(TAG, "Starting io manager.");
-			mSerialIoManager = new SerialInputOutputManager(port, mListener);
-			mExecutor.submit(mSerialIoManager);
+
+      try {
+        mSerialIoManager = new SerialInputOutputManager(port, mListener);
+        mExecutor.submit(mSerialIoManager);
+      } catch (IOException | NullPointerException e) {
+        port = null;
+      }
 		}
 	}
 
