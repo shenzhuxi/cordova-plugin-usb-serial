@@ -431,7 +431,7 @@ public class Serial extends CordovaPlugin {
 
       try {
         mSerialIoManager.stop();
-      } catch (NullPointerException e) {
+      } catch (IOException | NullPointerException e) {
         // Ignore
       }
 
@@ -449,7 +449,7 @@ public class Serial extends CordovaPlugin {
       try {
         mSerialIoManager = new SerialInputOutputManager(port, mListener);
         mExecutor.submit(mSerialIoManager);
-      } catch (NullPointerException e) {
+      } catch (IOException | NullPointerException e) {
         port = null;
       }
 		}
