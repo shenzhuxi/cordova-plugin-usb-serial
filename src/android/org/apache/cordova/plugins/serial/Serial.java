@@ -447,6 +447,7 @@ public class Serial extends CordovaPlugin {
 			Log.i(TAG, "Starting io manager.");
 
       try {
+        if (!port.isOpen()) reopenPort();
         mSerialIoManager = new SerialInputOutputManager(port, mListener);
         mExecutor.submit(mSerialIoManager);
       } catch (NullPointerException e) {
@@ -527,31 +528,35 @@ public class Serial extends CordovaPlugin {
 				Log.d(TAG, "No serial device to resume.");
 			}
 			else {
-				UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
-				if (connection != null) {
-					// get first port and open it
-					port = driver.getPorts().get(0);
-					try {
-						port.open(connection);
-						port.setParameters(baudRate, dataBits, stopBits, parity);
-						if (setDTR) port.setDTR(true);
-						if (setRTS) port.setRTS(true);
-					}
-					catch (IOException e) {
-						// deal with error
-						Log.d(TAG, Objects.requireNonNull(e.getMessage()));
-					}
-					Log.d(TAG, "Serial port opened!");
-				}
-				else {
-					Log.d(TAG, "Cannot connect to the device!");
-				}
-				Log.d(TAG, "Serial device: " + driver.getClass().getSimpleName());
+        reopenPort();
 			}
 
 			onDeviceStateChange();
 		}
 	}
+
+  public void reopenPort() {
+    UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
+    if (connection != null) {
+      // get first port and open it
+      port = driver.getPorts().get(0);
+      try {
+        port.open(connection);
+        port.setParameters(baudRate, dataBits, stopBits, parity);
+        if (setDTR) port.setDTR(true);
+        if (setRTS) port.setRTS(true);
+      }
+      catch (IOException e) {
+        // deal with error
+        Log.d(TAG, Objects.requireNonNull(e.getMessage()));
+      }
+      Log.d(TAG, "Serial port opened!");
+    }
+    else {
+      Log.d(TAG, "Cannot connect to the device!");
+    }
+    Log.d(TAG, "Serial device: " + driver.getClass().getSimpleName());
+  }
 
 
 	/**
