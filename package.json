@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-usb-serial",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Cordova plugin to communicate with the android USB serial port",
   "cordova": {
     "id": "Samuelslooky/cordova-plugin-usb-serial",
