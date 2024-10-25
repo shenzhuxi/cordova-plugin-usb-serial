@@ -300,6 +300,8 @@ public class Serial extends CordovaPlugin {
 			}
 			else {
 				try {
+          if (!port.isOpen()) reopenPort();
+
 					Log.d(TAG, data);
 					byte[] buffer = data.getBytes();
 					port.write(buffer, 1000);
@@ -327,6 +329,8 @@ public class Serial extends CordovaPlugin {
 			}
 			else {
 				try {
+          if (!port.isOpen()) reopenPort();
+
 					Log.d(TAG, data);
 					byte[] buffer = hexStringToByteArray(data);
 					port.write(buffer, 1000);
@@ -370,6 +374,8 @@ public class Serial extends CordovaPlugin {
 				}
 				else {
 					try {
+            if (!port.isOpen()) reopenPort();
+
 						int len = port.read(mReadBuffer.array(), READ_WAIT_MILLIS);
 						// Whatever happens, we send an "OK" result, up to the
 						// receiver to check that len > 0
@@ -448,6 +454,7 @@ public class Serial extends CordovaPlugin {
 
       try {
         if (!port.isOpen()) reopenPort();
+        
         mSerialIoManager = new SerialInputOutputManager(port, mListener);
         mExecutor.submit(mSerialIoManager);
       } catch (NullPointerException e) {
