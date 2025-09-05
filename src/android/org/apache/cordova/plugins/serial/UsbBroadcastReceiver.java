@@ -1,7 +1,7 @@
 package org.apache.cordova.plugins.serial;
 
 import org.apache.cordova.CallbackContext;
-
+import org.apache.cordova.PluginResult;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,18 +44,28 @@ public class UsbBroadcastReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
 		if (USB_PERMISSION.equals(action)) {
-      synchronized (this) {
-        // deal with the user answer about the permission
-        if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-          Log.d(TAG, "Permission to connect to the device was accepted!");
-          callbackContext.success("Permission to connect to the device was accepted!");
-        } else {
-          Log.d(TAG, "Permission to connect to the device was denied!");
-          callbackContext.error("Permission to connect to the device was denied!");
-        }
-        // unregister the broadcast receiver since it's no longer needed
-        activity.unregisterReceiver(this);
-      }
+      		synchronized (this) {
+				// deal with the user answer about the permission
+				if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+					Log.d(TAG, "Permission to connect to the device was accepted!");
+					callbackContext.success("Permission to connect to the device was accepted!");
+				} else {
+					Log.d(TAG, "Permission to connect to the device was denied!");
+					callbackContext.error("Permission to connect to the device was denied!");
+				}
+				// unregister the broadcast receiver since it's no longer needed
+				activity.unregisterReceiver(this);
+			}
+		} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+			// Keep the callback alive for future events
+			PluginResult result = new PluginResult(PluginResult.Status.OK, "attached");
+			result.setKeepCallback(true);
+			callbackContext.sendPluginResult(result);
+		} else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+			// Keep the callback alive for future events
+			PluginResult result = new PluginResult(PluginResult.Status.OK, "detached");
+			result.setKeepCallback(true);
+			callbackContext.sendPluginResult(result);
 		}
 	}
 }

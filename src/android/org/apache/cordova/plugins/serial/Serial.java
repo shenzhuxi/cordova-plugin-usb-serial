@@ -51,7 +51,8 @@ public class Serial extends CordovaPlugin {
 	private static final String ACTION_WRITE_HEX = "writeSerialHex";
 	private static final String ACTION_CLOSE = "closeSerial";
 	private static final String ACTION_READ_CALLBACK = "registerReadCallback";
-
+	private static final String ACTION_USB_ATTACHED = "usbAttached";
+	private static final String ACTION_USB_DETACHED = "usbDetached";
 	// UsbManager instance to deal with permission and opening
 	private UsbManager manager;
 	// The current driver that handle the serial port
@@ -137,6 +138,15 @@ public class Serial extends CordovaPlugin {
 		// Register read callback
 		else if (ACTION_READ_CALLBACK.equals(action)) {
 			registerReadCallback(callbackContext);
+			return true;
+		}
+		// Register USB attach callback
+		else if (ACTION_USB_ATTACHED.equals(action)) {
+            usbAttached(callbackContext);
+            return true;
+        }
+		else if (ACTION_USB_DETACHED.equals(action)) {
+			usbDetached(callbackContext);
 			return true;
 		}
 		// the action doesn't exist
@@ -499,6 +509,44 @@ public class Serial extends CordovaPlugin {
 				PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, returnObj);
 				pluginResult.setKeepCallback(true);
 				callbackContext.sendPluginResult(pluginResult);
+			}
+		});
+	}
+
+	/**
+	 * Register callback for USB device attached
+	 * @param callbackContext the cordova {@link CallbackContext}
+	 */
+	private void usbAttached(final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(() -> {
+			// Broadcast receiver for USB attached
+			IntentFilter filterAttachDetach = new IntentFilter();
+			filterAttachDetach.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+			// this broadcast receiver will handle the results
+			UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver(callbackContext, cordova.getActivity());
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+				cordova.getActivity().registerReceiver(usbReceiver, filterAttachDetach, Context.RECEIVER_NOT_EXPORTED);
+			} else {
+				cordova.getActivity().registerReceiver(usbReceiver, filterAttachDetach);
+			}
+		});
+	}
+
+	/**
+	 * Register callback for USB device detached
+	 * @param callbackContext the cordova {@link CallbackContext}
+	 */
+	private void usbDetached(final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(() -> {
+			// Broadcast receiver for USB detached
+			IntentFilter filterAttachDetach = new IntentFilter();
+			filterAttachDetach.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+			// this broadcast receiver will handle the results
+			UsbBroadcastReceiver usbReceiver = new UsbBroadcastReceiver(callbackContext, cordova.getActivity());
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+				cordova.getActivity().registerReceiver(usbReceiver, filterAttachDetach, Context.RECEIVER_NOT_EXPORTED);
+			} else {
+				cordova.getActivity().registerReceiver(usbReceiver, filterAttachDetach);
 			}
 		});
 	}

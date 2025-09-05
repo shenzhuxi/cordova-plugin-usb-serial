@@ -44,5 +44,23 @@ const serial = {
       [],
     );
   },
+  usbAttached: function (successCallback, errorCallback) {
+    cordova.exec(
+      successCallback,
+      errorCallback,
+      "Serial",
+      "usbAttached",
+      [],
+    );
+  },
+  usbDetached: function (successCallback, errorCallback) {
+    cordova.exec(
+      successCallback,
+      errorCallback,
+      "Serial",
+      "usbDetached",
+      [],
+    );
+  },
 };
 module.exports = serial;
