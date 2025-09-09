@@ -2,6 +2,8 @@ package org.apache.cordova.plugins.serial;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -56,16 +58,24 @@ public class UsbBroadcastReceiver extends BroadcastReceiver {
 				// unregister the broadcast receiver since it's no longer needed
 				activity.unregisterReceiver(this);
 			}
-		} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-			// Keep the callback alive for future events
-			PluginResult result = new PluginResult(PluginResult.Status.OK, "attached");
-			result.setKeepCallback(true);
-			callbackContext.sendPluginResult(result);
-		} else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-			// Keep the callback alive for future events
-			PluginResult result = new PluginResult(PluginResult.Status.OK, "detached");
-			result.setKeepCallback(true);
-			callbackContext.sendPluginResult(result);
+		} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+			android.hardware.usb.UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+			if (device != null) {
+				try {
+					JSONObject deviceInfo = new JSONObject();
+					deviceInfo.put("status", "detached");
+					deviceInfo.put("vid", device.getVendorId());
+					deviceInfo.put("pid", device.getProductId());
+					deviceInfo.put("deviceName", device.getDeviceName());
+					// Keep the callback alive for future events
+					PluginResult result = new PluginResult(PluginResult.Status.OK, deviceInfo);
+					result.setKeepCallback(true);
+					callbackContext.sendPluginResult(result);
+				} catch (JSONException e) {
+					Log.d(TAG, e.getMessage());
+					callbackContext.error(e.getMessage());
+				}
+			}
 		}
 	}
 }
