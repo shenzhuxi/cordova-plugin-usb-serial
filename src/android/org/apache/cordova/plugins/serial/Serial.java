@@ -76,7 +76,6 @@ public class Serial extends CordovaPlugin {
 	private CallbackContext readCallback;
 
 	// I/O manager to handle new incoming serial data
-	private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 	private SerialInputOutputManager mSerialIoManager;
 	private final SerialInputOutputManager.Listener mListener =
 			new SerialInputOutputManager.Listener() {
@@ -466,7 +465,7 @@ public class Serial extends CordovaPlugin {
         if (!port.isOpen()) reopenPort();
         
         mSerialIoManager = new SerialInputOutputManager(port, mListener);
-        mExecutor.submit(mSerialIoManager);
+        mSerialIoManager.start();
       } catch (NullPointerException e) {
         port = null;
       }
