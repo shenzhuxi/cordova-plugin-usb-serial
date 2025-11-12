@@ -12,14 +12,16 @@ import android.hardware.usb.UsbManager;
 import android.util.Log;
 
 /**
- * Custom {@link BroadcastReceiver} that can talk through a cordova {@link CallbackContext}
+ * Custom {@link BroadcastReceiver} that can talk through a cordova
+ * {@link CallbackContext}
+ * 
  * @author Xavier Seignard <xavier.seignard@gmail.com>
  */
 public class UsbBroadcastReceiver extends BroadcastReceiver {
 	// logging tag
 	private final String TAG = UsbBroadcastReceiver.class.getSimpleName();
 	// usb permission tag name
-	public static final String USB_PERMISSION ="org.apache.cordova.plugins.serial.USB_PERMISSION";
+	public static final String USB_PERMISSION = "org.apache.cordova.plugins.serial.USB_PERMISSION";
 	// cordova callback context to notify the success/error to the cordova app
 	private CallbackContext callbackContext;
 	// cordova activity to use it to unregister this broadcast receiver
@@ -27,6 +29,7 @@ public class UsbBroadcastReceiver extends BroadcastReceiver {
 
 	/**
 	 * Custom broadcast receiver that will handle the cordova callback context
+	 * 
 	 * @param callbackContext
 	 * @param activity
 	 */
@@ -35,35 +38,34 @@ public class UsbBroadcastReceiver extends BroadcastReceiver {
 		this.activity = activity;
 	}
 
-
 	/**
 	 * Handle permission answer
+	 * 
 	 * @param context
 	 * @param intent
-	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context,
+	 *      android.content.Intent)
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
 		if (USB_PERMISSION.equals(action)) {
-      		synchronized (this) {
-				// deal with the user answer about the permission
-				if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-					Log.d(TAG, "Permission to connect to the device was accepted!");
-					callbackContext.success("Permission to connect to the device was accepted!");
-				} else {
-					Log.d(TAG, "Permission to connect to the device was denied!");
-					callbackContext.error("Permission to connect to the device was denied!");
-				}
-				// unregister the broadcast receiver since it's no longer needed
-				activity.unregisterReceiver(this);
+			// deal with the user answer about the permission
+			if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+				Log.d(TAG, "Permission to connect to the device was accepted!");
+				callbackContext.success("Permission to connect to the device was accepted!");
+			} else {
+				Log.d(TAG, "Permission to connect to the device was denied!");
+				callbackContext.error("Permission to connect to the device was denied!");
 			}
-		} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+			// unregister the broadcast receiver since it's no longer needed
+			activity.unregisterReceiver(this);
+		} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)
+				|| UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 			android.hardware.usb.UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 			if (device != null) {
 				try {
 					JSONObject deviceInfo = new JSONObject();
-					deviceInfo.put("status", "detached");
 					deviceInfo.put("vid", device.getVendorId());
 					deviceInfo.put("pid", device.getProductId());
 					deviceInfo.put("deviceName", device.getDeviceName());
